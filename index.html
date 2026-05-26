@@ -1,147 +1,965 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eMulti Match - Jogo da Memória APS</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eMulti Match - Jogo da Memória APS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green:   #1db87e;
+    --green2:  #17a46e;
+    --teal:    #0e9d8a;
+    --dark:    #0d1f1a;
+    --dark2:   #122820;
+    --panel:   #162e25;
+    --card-bg: #1a3a2e;
+    --card-front: #0f2d22;
+    --accent:  #f5c842;
+    --text:    #e8f5ef;
+    --muted:   #7cb89a;
+    --danger:  #e05c5c;
+    --radius:  14px;
+    --shadow:  0 8px 32px rgba(0,0,0,.45);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 10% 0%, rgba(29,184,126,.13) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 90% 100%, rgba(14,157,138,.10) 0%, transparent 60%);
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  .container { width: 100%; max-width: 520px; margin: 0 auto; padding: 0 20px; }
+
+  /* ── START SCREEN ── */
+  #start-screen {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+
+  .logo-header { text-align: center; margin-bottom: 32px; }
+
+  .icon-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, var(--green), var(--teal));
+    border-radius: 22px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 24px rgba(29,184,126,.4);
+    animation: pulse-glow 2.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%,100% { box-shadow: 0 4px 24px rgba(29,184,126,.4); }
+    50%      { box-shadow: 0 4px 40px rgba(29,184,126,.75); }
+  }
+
+  .icon-box svg { width: 36px; height: 36px; stroke: #fff; }
+
+  h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(2rem, 6vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  h1 span { color: var(--green); }
+
+  .subtitle {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: .9rem;
+    letter-spacing: .5px;
+  }
+
+  /* MENU CARD */
+  .menu-card {
+    background: var(--panel);
+    border: 1px solid rgba(29,184,126,.18);
+    border-radius: 24px;
+    padding: 28px 24px;
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .menu-card h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+
+  .difficulty-options {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .btn-difficulty {
+    flex: 1 1 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 16px 10px;
+    background: var(--card-bg);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color .2s, transform .15s, background .2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-difficulty:hover { border-color: var(--green); transform: translateY(-2px); }
+  .btn-difficulty.selected {
+    border-color: var(--green);
+    background: rgba(29,184,126,.15);
+  }
+  .diff-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: .95rem; }
+  .diff-desc  { font-size: .72rem; color: var(--muted); }
+
+  .instructions {
+    background: var(--dark2);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .instructions h3 {
+    font-family: 'Sora', sans-serif;
+    font-size: .8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .instructions ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .instructions li {
+    font-size: .83rem;
+    color: var(--text);
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.45;
+  }
+  .instructions li::before {
+    content: '▸';
+    position: absolute; left: 0;
+    color: var(--green);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--green), var(--teal));
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-family: 'Sora', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .2s, transform .15s, box-shadow .2s;
+    box-shadow: 0 4px 20px rgba(29,184,126,.35);
+  }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(29,184,126,.5); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 2px solid var(--muted);
+    border-radius: var(--radius);
+    color: var(--muted);
+    font-family: 'Sora', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .2s, color .2s;
+  }
+  .btn-secondary:hover { border-color: var(--green); color: var(--green); }
+
+  .main-footer {
+    margin-top: 28px;
+    text-align: center;
+    color: var(--muted);
+    font-size: .78rem;
+    opacity: .7;
+  }
+
+  /* ── GAME SCREEN ── */
+  #game-screen { background: var(--dark2); }
+
+  .game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid rgba(29,184,126,.12);
+    flex-wrap: wrap;
+    gap: 10px;
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .game-info { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .info-item svg { width: 18px; height: 18px; stroke: var(--green); }
+
+  .game-controls { display: flex; gap: 8px; }
+
+  .game-controls button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px; height: 38px;
+    background: var(--card-bg);
+    border: 1px solid rgba(29,184,126,.2);
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+    transition: background .2s, border-color .2s;
+  }
+  .game-controls button:hover { background: rgba(29,184,126,.2); border-color: var(--green); }
+  .game-controls button svg { width: 18px; height: 18px; stroke: currentColor; }
+
+  .game-board-container {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .game-board {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    max-width: 700px;
+  }
+
+  /* Grid columns by difficulty */
+  .game-board.easy   { grid-template-columns: repeat(4, 1fr); }
+  .game-board.medium { grid-template-columns: repeat(4, 1fr); }
+  .game-board.hard   { grid-template-columns: repeat(6, 1fr); }
+
+  /* ── CARD ── */
+  .card {
+    aspect-ratio: 1;
+    cursor: pointer;
+    perspective: 900px;
+  }
+
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform .42s cubic-bezier(.4,0,.2,1);
+    border-radius: var(--radius);
+  }
+
+  .card.flipped .card-inner,
+  .card.matched .card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+    padding: 8px 4px;
+  }
+
+  /* Back face (hidden state) */
+  .card-back {
+    background: var(--card-bg);
+    border: 2px solid rgba(29,184,126,.25);
+    box-shadow: 0 2px 12px rgba(0,0,0,.3);
+    transition: border-color .2s;
+  }
+  .card:hover:not(.flipped):not(.matched) .card-back { border-color: var(--green); }
+
+  .card-back-pattern {
+    width: 38px; height: 38px;
+    opacity: .18;
+  }
+
+  /* Front face */
+  .card-front {
+    background: var(--card-front);
+    border: 2px solid rgba(29,184,126,.4);
+    transform: rotateY(180deg);
+    flex-direction: column;
+  }
+
+  .card.matched .card-front {
+    border-color: var(--green);
+    background: rgba(29,184,126,.15);
+    animation: matched-pop .35s ease;
+  }
+
+  @keyframes matched-pop {
+    0%   { transform: rotateY(180deg) scale(1); }
+    50%  { transform: rotateY(180deg) scale(1.08); }
+    100% { transform: rotateY(180deg) scale(1); }
+  }
+
+  .card-emoji { font-size: clamp(1.4rem, 4vw, 2rem); line-height: 1; }
+  .card-label {
+    font-size: clamp(.55rem, 1.5vw, .72rem);
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .card-type {
+    font-size: clamp(.45rem, 1.2vw, .6rem);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+
+  /* ── VICTORY SCREEN ── */
+  #victory-screen {
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+
+  .victory-card {
+    background: var(--panel);
+    border: 1px solid rgba(29,184,126,.25);
+    border-radius: 28px;
+    padding: 32px 28px;
+    box-shadow: var(--shadow);
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+  }
+
+  .victory-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, var(--accent), #e0a020);
+    border-radius: 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 28px rgba(245,200,66,.4);
+    animation: pulse-glow-gold 2.5s ease-in-out infinite;
+  }
+  .victory-icon svg { width: 40px; height: 40px; stroke: #fff; }
+
+  @keyframes pulse-glow-gold {
+    0%,100% { box-shadow: 0 4px 28px rgba(245,200,66,.4); }
+    50%      { box-shadow: 0 4px 52px rgba(245,200,66,.7); }
+  }
+
+  .victory-card h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.7rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .victory-msg { color: var(--muted); font-size: .88rem; margin-bottom: 24px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .stat-box {
+    background: var(--dark2);
+    border-radius: 12px;
+    padding: 14px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat-box .label { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .stat-box .value { font-family: 'Sora', sans-serif; font-size: 1.3rem; font-weight: 800; color: var(--green); }
+
+  .ranking-section { margin-bottom: 24px; }
+  .ranking-section h3 {
+    font-family: 'Sora', sans-serif;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 12px;
+  }
+
+  #ranking-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  #ranking-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--dark2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: .85rem;
+  }
+  #ranking-list li .rank-pos {
+    font-family: 'Sora', sans-serif;
+    font-weight: 800;
+    color: var(--accent);
+    width: 22px;
+  }
+  #ranking-list li .rank-score {
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    color: var(--green);
+  }
+  #ranking-list li .rank-info { color: var(--muted); font-size: .75rem; }
+  #ranking-list li.highlight { border: 1px solid var(--green); }
+
+  .victory-actions { display: flex; flex-direction: column; gap: 10px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .game-board.hard { grid-template-columns: repeat(4, 1fr); }
+    .game-board { gap: 8px; }
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fade-in { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  .screen.active { animation: fade-in .35s ease; }
+
+  /* Shake for wrong match */
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(6px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
+  .card.wrong .card-inner { animation: shake .38s ease; }
+
+  /* SVG icon helpers */
+  svg.icon { display: block; }
+</style>
 </head>
 <body>
-    <div id="app">
-        <!-- Tela Inicial -->
-        <section id="start-screen" class="screen active">
-            <div class="container">
-                <header class="logo-header">
-                    <div class="icon-box">
-                        <i data-lucide="heart-pulse" class="logo-icon"></i>
-                    </div>
-                    <h1>eMulti <span>Match</span></h1>
-                    <p class="subtitle">Atenção Primária à Saúde</p>
-                </header>
 
-                <div class="menu-card">
-                    <h2>Escolha a Dificuldade</h2>
-                    <div class="difficulty-options">
-                        <button class="btn-difficulty" data-difficulty="easy">
-                            <span class="diff-title">Fácil</span>
-                            <span class="diff-desc">8 cartas (4 pares)</span>
-                        </button>
-                        <button class="btn-difficulty" data-difficulty="medium">
-                            <span class="diff-title">Médio</span>
-                            <span class="diff-desc">16 cartas (8 pares)</span>
-                        </button>
-                        <button class="btn-difficulty" data-difficulty="hard">
-                            <span class="diff-title">Difícil</span>
-                            <span class="diff-desc">24 cartas (12 pares)</span>
-                        </button>
-                    </div>
-                    
-                    <div class="instructions">
-                        <h3>Como jogar:</h3>
-                        <ul>
-                            <li>Encontre os pares das especialidades e ações da eMulti.</li>
-                            <li>Menos movimentos e menos tempo garantem mais pontos.</li>
-                        </ul>
-                    </div>
+<div id="app">
 
-                    <button id="btn-start" class="btn-primary" disabled>Selecione um nível</button>
-                </div>
+  <!-- ── START SCREEN ── -->
+  <section id="start-screen" class="screen active">
+    <div class="container" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;">
 
-                <footer class="main-footer">
-                    <p>Inspirado no cuidado interprofissional do SUS</p>
-                </footer>
-            </div>
-        </section>
+      <header class="logo-header">
+        <div class="icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+        <h1>eMulti <span>Match</span></h1>
+        <p class="subtitle">Atenção Primária à Saúde</p>
+      </header>
 
-        <!-- Tela de Jogo -->
-        <section id="game-screen" class="screen">
-            <header class="game-header">
-                <div class="game-info">
-                    <div class="info-item">
-                        <i data-lucide="clock"></i>
-                        <span id="timer">00:00</span>
-                    </div>
-                    <div class="info-item">
-                        <i data-lucide="move"></i>
-                        <span id="moves">0</span>
-                    </div>
-                    <div class="info-item">
-                        <i data-lucide="star"></i>
-                        <span id="score">0</span>
-                    </div>
-                </div>
-                <div class="game-controls">
-                    <button id="btn-sound" title="Alternar Som">
-                        <i data-lucide="volume-2" id="sound-icon"></i>
-                    </button>
-                    <button id="btn-reset" title="Reiniciar Jogo">
-                        <i data-lucide="rotate-ccw"></i>
-                    </button>
-                    <button id="btn-back" title="Voltar ao Menu">
-                        <i data-lucide="home"></i>
-                    </button>
-                </div>
-            </header>
+      <div class="menu-card">
+        <h2>Escolha a Dificuldade</h2>
+        <div class="difficulty-options">
+          <button class="btn-difficulty" data-difficulty="easy">
+            <span class="diff-title">Fácil</span>
+            <span class="diff-desc">8 cartas (4 pares)</span>
+          </button>
+          <button class="btn-difficulty" data-difficulty="medium">
+            <span class="diff-title">Médio</span>
+            <span class="diff-desc">16 cartas (8 pares)</span>
+          </button>
+          <button class="btn-difficulty" data-difficulty="hard">
+            <span class="diff-title">Difícil</span>
+            <span class="diff-desc">24 cartas (12 pares)</span>
+          </button>
+        </div>
 
-            <main class="game-board-container">
-                <div id="game-board" class="game-board">
-                    <!-- Cartas serão geradas via JS -->
-                </div>
-            </main>
-        </section>
+        <div class="instructions">
+          <h3>Como jogar:</h3>
+          <ul>
+            <li>Encontre os pares das especialidades e ações da eMulti.</li>
+            <li>Menos movimentos e menos tempo garantem mais pontos.</li>
+          </ul>
+        </div>
 
-        <!-- Tela de Vitória -->
-        <section id="victory-screen" class="screen">
-            <div class="container">
-                <div class="victory-card">
-                    <div class="victory-icon">
-                        <i data-lucide="trophy"></i>
-                    </div>
-                    <h2>Excelente Trabalho!</h2>
-                    <p class="victory-msg">Você fortaleceu o cuidado na Atenção Primária.</p>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-box">
-                            <span class="label">Tempo</span>
-                            <span id="final-time" class="value">00:00</span>
-                        </div>
-                        <div class="stat-box">
-                            <span class="label">Movimentos</span>
-                            <span id="final-moves" class="value">0</span>
-                        </div>
-                        <div class="stat-box">
-                            <span class="label">Pontuação</span>
-                            <span id="final-score" class="value">0</span>
-                        </div>
-                    </div>
+        <button id="btn-start" class="btn-primary" disabled>Selecione um nível</button>
+      </div>
 
-                    <div class="ranking-section">
-                        <h3>Melhores Pontuações (Nível <span id="rank-diff"></span>)</h3>
-                        <ul id="ranking-list">
-                            <!-- Preenchido via JS -->
-                        </ul>
-                    </div>
-
-                    <div class="victory-actions">
-                        <button id="btn-play-again" class="btn-primary">Jogar Novamente</button>
-                        <button id="btn-menu" class="btn-secondary">Menu Principal</button>
-                    </div>
-                </div>
-            </div>
-        </section>
+      <footer class="main-footer">
+        <p>Inspirado no cuidado interprofissional do SUS</p>
+      </footer>
     </div>
+  </section>
 
-    <script src="assets/js/audio.js"></script>
-    <script src="assets/js/game.js"></script>
-    <script>
-        // Inicializar ícones Lucide
-        lucide.createIcons();
-    </script>
+  <!-- ── GAME SCREEN ── -->
+  <section id="game-screen" class="screen">
+    <header class="game-header">
+      <div class="game-info">
+        <div class="info-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span id="timer">00:00</span>
+        </div>
+        <div class="info-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+          <span id="moves">0</span>
+        </div>
+        <div class="info-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span id="score">0</span>
+        </div>
+      </div>
+      <div class="game-controls">
+        <button id="btn-sound" title="Alternar Som">
+          <svg id="sound-icon" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        </button>
+        <button id="btn-reset" title="Reiniciar Jogo">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+        </button>
+        <button id="btn-back" title="Voltar ao Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="game-board-container">
+      <div id="game-board" class="game-board"></div>
+    </main>
+  </section>
+
+  <!-- ── VICTORY SCREEN ── -->
+  <section id="victory-screen" class="screen">
+    <div class="container" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;">
+      <div class="victory-card">
+        <div class="victory-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="8 6 2 12 8 18"/><path d="M22 12H2"/></svg>
+        </div>
+
+        <div class="victory-icon" style="background:linear-gradient(135deg,#f5c842,#e0a020);">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+        </div>
+
+        <h2>Excelente Trabalho!</h2>
+        <p class="victory-msg">Você fortaleceu o cuidado na Atenção Primária.</p>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <span class="label">Tempo</span>
+            <span id="final-time" class="value">00:00</span>
+          </div>
+          <div class="stat-box">
+            <span class="label">Movimentos</span>
+            <span id="final-moves" class="value">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="label">Pontuação</span>
+            <span id="final-score" class="value">0</span>
+          </div>
+        </div>
+
+        <div class="ranking-section">
+          <h3>Melhores Pontuações — Nível <span id="rank-diff"></span></h3>
+          <ul id="ranking-list"></ul>
+        </div>
+
+        <div class="victory-actions">
+          <button id="btn-play-again" class="btn-primary">Jogar Novamente</button>
+          <button id="btn-menu" class="btn-secondary">Menu Principal</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   AUDIO (Web Audio API — sem arquivos externos)
+═══════════════════════════════════════════ */
+const Audio = (() => {
+  let ctx = null, muted = false;
+
+  function getCtx() {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    return ctx;
+  }
+
+  function play(freq, type, duration, vol = 0.18) {
+    if (muted) return;
+    try {
+      const ac = getCtx();
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.connect(gain);
+      gain.connect(ac.destination);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, ac.currentTime);
+      gain.gain.setValueAtTime(vol, ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration);
+      osc.start(ac.currentTime);
+      osc.stop(ac.currentTime + duration);
+    } catch(_) {}
+  }
+
+  return {
+    flip()    { play(520, 'sine', .12); },
+    match()   { play(880, 'sine', .15); setTimeout(()=>play(1100,'sine',.15),120); },
+    wrong()   { play(220, 'sawtooth', .22, .1); },
+    victory() {
+      [523,659,784,1047].forEach((f,i) => setTimeout(()=>play(f,'sine',.3,.15),i*120));
+    },
+    toggleMute() { muted = !muted; return muted; }
+  };
+})();
+
+/* ═══════════════════════════════════════════
+   CARD DATA
+═══════════════════════════════════════════ */
+const ALL_CARDS = [
+  // Especialidade + Ação (par = mesmo id)
+  { id:1,  emoji:'🧠', label:'Psicologia',      type:'Especialidade' },
+  { id:1,  emoji:'💬', label:'Escuta Ativa',    type:'Ação eMulti'   },
+  { id:2,  emoji:'🥗', label:'Nutrição',         type:'Especialidade' },
+  { id:2,  emoji:'🍎', label:'Educação Alimentar',type:'Ação eMulti' },
+  { id:3,  emoji:'🏃', label:'Fisioterapia',     type:'Especialidade' },
+  { id:3,  emoji:'🦴', label:'Reabilitação',     type:'Ação eMulti'  },
+  { id:4,  emoji:'💊', label:'Farmácia',         type:'Especialidade' },
+  { id:4,  emoji:'📋', label:'Revisão de Medicamentos',type:'Ação eMulti'},
+  { id:5,  emoji:'🦷', label:'Odontologia',      type:'Especialidade' },
+  { id:5,  emoji:'😁', label:'Saúde Bucal',      type:'Ação eMulti'  },
+  { id:6,  emoji:'🤝', label:'Serviço Social',   type:'Especialidade' },
+  { id:6,  emoji:'🏘️', label:'Vínculo Comunitário',type:'Ação eMulti'},
+  { id:7,  emoji:'🎨', label:'Terapia Ocupacional',type:'Especialidade'},
+  { id:7,  emoji:'✂️', label:'Atividade da Vida Diária',type:'Ação eMulti'},
+  { id:8,  emoji:'🗣️', label:'Fonoaudiologia',   type:'Especialidade' },
+  { id:8,  emoji:'👂', label:'Saúde Auditiva',   type:'Ação eMulti'  },
+  { id:9,  emoji:'🏋️', label:'Educação Física',  type:'Especialidade' },
+  { id:9,  emoji:'❤️', label:'Promoção da Saúde', type:'Ação eMulti' },
+  { id:10, emoji:'🌿', label:'Saúde Integrativa', type:'Especialidade'},
+  { id:10, emoji:'🧘', label:'Práticas Integrativas',type:'Ação eMulti'},
+  { id:11, emoji:'👶', label:'Pediatria APS',     type:'Especialidade' },
+  { id:11, emoji:'🍼', label:'Puericultura',      type:'Ação eMulti'  },
+  { id:12, emoji:'🌸', label:'Ginecologia APS',   type:'Especialidade' },
+  { id:12, emoji:'🩺', label:'Prevenção Ginecológica',type:'Ação eMulti'},
+];
+
+const PAIR_COUNTS = { easy: 4, medium: 8, hard: 12 };
+
+/* ═══════════════════════════════════════════
+   GAME STATE
+═══════════════════════════════════════════ */
+let state = {
+  difficulty: null,
+  cards: [],
+  flipped: [],
+  matched: [],
+  moves: 0,
+  score: 0,
+  timer: 0,
+  timerInterval: null,
+  locked: false,
+};
+
+/* ═══════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════ */
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function formatTime(s) {
+  const m = Math.floor(s / 60).toString().padStart(2, '0');
+  const sec = (s % 60).toString().padStart(2, '0');
+  return `${m}:${sec}`;
+}
+
+/* ═══════════════════════════════════════════
+   RANKING (localStorage)
+═══════════════════════════════════════════ */
+function getRanking(diff) {
+  try { return JSON.parse(localStorage.getItem(`emulti_rank_${diff}`)) || []; }
+  catch { return []; }
+}
+
+function saveRanking(diff, entry) {
+  let list = getRanking(diff);
+  list.push(entry);
+  list.sort((a, b) => b.score - a.score);
+  list = list.slice(0, 5);
+  try { localStorage.setItem(`emulti_rank_${diff}`, JSON.stringify(list)); } catch(_) {}
+  return list;
+}
+
+/* ═══════════════════════════════════════════
+   SCREENS
+═══════════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ═══════════════════════════════════════════
+   START GAME
+═══════════════════════════════════════════ */
+function startGame() {
+  const pairs = PAIR_COUNTS[state.difficulty];
+  const pool = shuffle(ALL_CARDS).slice(0, pairs * 2); // Already in pairs
+  // Actually, ALL_CARDS pairs are already grouped; we need to pick 'pairs' pair-ids
+  const pairIds = shuffle([...new Set(ALL_CARDS.map(c=>c.id))]).slice(0, pairs);
+  const selected = ALL_CARDS.filter(c => pairIds.includes(c.id));
+  state.cards = shuffle(selected).map((c, i) => ({ ...c, uid: i }));
+  state.flipped = [];
+  state.matched = [];
+  state.moves = 0;
+  state.score = 0;
+  state.timer = 0;
+  state.locked = false;
+
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    state.timer++;
+    document.getElementById('timer').textContent = formatTime(state.timer);
+  }, 1000);
+
+  renderBoard();
+  updateHUD();
+  showScreen('game-screen');
+}
+
+/* ═══════════════════════════════════════════
+   RENDER BOARD
+═══════════════════════════════════════════ */
+function renderBoard() {
+  const board = document.getElementById('game-board');
+  board.className = `game-board ${state.difficulty}`;
+  board.innerHTML = '';
+
+  state.cards.forEach((card, idx) => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.dataset.index = idx;
+    el.innerHTML = `
+      <div class="card-inner">
+        <div class="card-face card-back">
+          <svg class="card-back-pattern" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="30" cy="30" r="28" stroke="#1db87e" stroke-width="3"/>
+            <path d="M20 30 Q30 15 40 30 Q30 45 20 30Z" fill="#1db87e"/>
+          </svg>
+        </div>
+        <div class="card-face card-front">
+          <span class="card-emoji">${card.emoji}</span>
+          <span class="card-label">${card.label}</span>
+          <span class="card-type">${card.type}</span>
+        </div>
+      </div>`;
+    el.addEventListener('click', () => onCardClick(idx));
+    board.appendChild(el);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   CARD CLICK
+═══════════════════════════════════════════ */
+function onCardClick(idx) {
+  if (state.locked) return;
+  if (state.flipped.includes(idx)) return;
+  if (state.matched.includes(idx)) return;
+
+  Audio.flip();
+  state.flipped.push(idx);
+  flipCard(idx, true);
+
+  if (state.flipped.length === 2) {
+    state.moves++;
+    updateHUD();
+    state.locked = true;
+    checkMatch();
+  }
+}
+
+function flipCard(idx, show) {
+  const card = document.querySelector(`.card[data-index="${idx}"]`);
+  if (!card) return;
+  if (show) card.classList.add('flipped');
+  else card.classList.remove('flipped');
+}
+
+function checkMatch() {
+  const [a, b] = state.flipped;
+  if (state.cards[a].id === state.cards[b].id) {
+    // Match!
+    setTimeout(() => {
+      Audio.match();
+      state.matched.push(a, b);
+      document.querySelector(`.card[data-index="${a}"]`).classList.add('matched');
+      document.querySelector(`.card[data-index="${b}"]`).classList.add('matched');
+
+      const basePoints = 100;
+      const timeBonus = Math.max(0, 50 - state.timer);
+      state.score += basePoints + timeBonus;
+      updateHUD();
+
+      state.flipped = [];
+      state.locked = false;
+
+      if (state.matched.length === state.cards.length) endGame();
+    }, 300);
+  } else {
+    // Wrong
+    setTimeout(() => {
+      Audio.wrong();
+      document.querySelector(`.card[data-index="${a}"]`).classList.add('wrong');
+      document.querySelector(`.card[data-index="${b}"]`).classList.add('wrong');
+
+      setTimeout(() => {
+        flipCard(a, false);
+        flipCard(b, false);
+        document.querySelector(`.card[data-index="${a}"]`).classList.remove('wrong');
+        document.querySelector(`.card[data-index="${b}"]`).classList.remove('wrong');
+        state.flipped = [];
+        state.locked = false;
+      }, 420);
+    }, 600);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   HUD
+═══════════════════════════════════════════ */
+function updateHUD() {
+  document.getElementById('moves').textContent = state.moves;
+  document.getElementById('score').textContent = state.score;
+}
+
+/* ═══════════════════════════════════════════
+   END GAME
+═══════════════════════════════════════════ */
+function endGame() {
+  clearInterval(state.timerInterval);
+  Audio.victory();
+
+  const penaltyPerMove = 5;
+  const finalScore = Math.max(0, state.score - (state.moves * penaltyPerMove));
+  state.score = finalScore;
+
+  const entry = { score: finalScore, time: formatTime(state.timer), moves: state.moves };
+  const ranking = saveRanking(state.difficulty, entry);
+
+  document.getElementById('final-time').textContent = formatTime(state.timer);
+  document.getElementById('final-moves').textContent = state.moves;
+  document.getElementById('final-score').textContent = finalScore;
+  document.getElementById('rank-diff').textContent = { easy:'Fácil', medium:'Médio', hard:'Difícil' }[state.difficulty];
+
+  const list = document.getElementById('ranking-list');
+  list.innerHTML = '';
+  const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+  ranking.forEach((r, i) => {
+    const li = document.createElement('li');
+    const isThis = r.score === finalScore && r.time === entry.time && r.moves === entry.moves;
+    if (isThis) li.classList.add('highlight');
+    li.innerHTML = `
+      <span class="rank-pos">${medals[i]}</span>
+      <span class="rank-score">${r.score} pts</span>
+      <span class="rank-info">${r.time} • ${r.moves} mov.</span>`;
+    list.appendChild(li);
+  });
+
+  setTimeout(() => showScreen('victory-screen'), 500);
+}
+
+/* ═══════════════════════════════════════════
+   EVENT LISTENERS
+═══════════════════════════════════════════ */
+// Difficulty buttons
+document.querySelectorAll('.btn-difficulty').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.btn-difficulty').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.difficulty = btn.dataset.difficulty;
+    const startBtn = document.getElementById('btn-start');
+    startBtn.disabled = false;
+    startBtn.textContent = 'Iniciar Jogo';
+  });
+});
+
+document.getElementById('btn-start').addEventListener('click', () => {
+  if (state.difficulty) startGame();
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  clearInterval(state.timerInterval);
+  startGame();
+});
+
+document.getElementById('btn-back').addEventListener('click', () => {
+  clearInterval(state.timerInterval);
+  showScreen('start-screen');
+});
+
+document.getElementById('btn-play-again').addEventListener('click', () => {
+  startGame();
+});
+
+document.getElementById('btn-menu').addEventListener('click', () => {
+  showScreen('start-screen');
+});
+
+// Sound toggle
+document.getElementById('btn-sound').addEventListener('click', () => {
+  const muted = Audio.toggleMute();
+  const icon = document.getElementById('sound-icon');
+  icon.innerHTML = muted
+    ? `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>`
+    : `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>`;
+});
+
+// Fix: remove the duplicate victory icon that appeared (the arrow icon is wrong)
+document.querySelector('#victory-screen .victory-icon:first-child')?.remove();
+</script>
 </body>
 </html>
